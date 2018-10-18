@@ -19,6 +19,10 @@ public class Hero : MonoBehaviour
     [SerializeField]
     private float _shieldLevel = 1;
     private GameObject lastTriggerGo = null;
+    // Declare a new delegate type WeaponFireDelegate 
+    public delegate void WeaponFireDelegate();                               // a 
+    // Create a WeaponFireDelegate field named fireDelegate. 
+    public WeaponFireDelegate fireDelegate;
 
     void Awake()
     {
@@ -30,6 +34,7 @@ public class Hero : MonoBehaviour
         {
             Debug.LogError("Hero.Awake() - Attempted to assign second Hero.S!");
         }
+        fireDelegate += TempFire;
     }
 
     void Update()
@@ -47,10 +52,16 @@ public class Hero : MonoBehaviour
         // Rotate the ship to make it feel more dynamic                      // c
         transform.rotation = Quaternion.Euler(yAxis * pitchMult, xAxis * rollMult, 0);
         // Allow the ship to fire
-        if (Input.GetKeyDown(KeyCode.Space))
-        {                            // a
-            TempFire();
-        }
+       // if (Input.GetKeyDown(KeyCode.Space))
+        //{                            // a
+         //   TempFire();
+        //}
+        // Use the fireDelegate to fire Weapons 
+        // First, make sure the button is pressed: Axis("Jump") 
+        // Then ensure that fireDelegate isn't null to avoid an error 
+        if (Input.GetAxis("Jump") == 1 && fireDelegate != null) {            // d 
+            fireDelegate();
+            }
     }
 
     void TempFire()
@@ -58,7 +69,11 @@ public class Hero : MonoBehaviour
         GameObject projGO = Instantiate<GameObject>(projectilePrefab);
         projGO.transform.position = transform.position;
         Rigidbody rigidB = projGO.GetComponent<Rigidbody>();
-        rigidB.velocity = Vector3.up * projectileSpeed;
+        //   rigidB.velocity = Vector3.up * projectileSpeed;
+        Projectile proj = projGO.GetComponent<Projectile>();                 // h 
+        proj.type = WeaponType.blaster;
+        float tSpeed = Main.GetWeaponDefinition(proj.type).velocity;
+        rigidB.velocity = Vector3.up * tSpeed;
     }
     void OnTriggerEnter(Collider other)
     {
